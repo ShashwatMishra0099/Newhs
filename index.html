@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DeepSeek AI ChatBot Assistant</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeepSeek AI ChatBot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
+      background: #f7f7f7;
       padding: 20px;
     }
     #chat-container {
       max-width: 600px;
       margin: auto;
-      background: #fff;
+      background: white;
       padding: 20px;
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -46,13 +46,13 @@
       width: 80px;
       padding: 10px;
       border: none;
-      background-color: #007BFF;
+      background: #007BFF;
       color: white;
       border-radius: 3px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #0056b3;
+      background: #0056b3;
     }
   </style>
 </head>
@@ -60,33 +60,27 @@
   <div id="chat-container">
     <h2>DeepSeek AI ChatBot</h2>
     <div id="chat-output"></div>
-    <input type="text" id="user-input" placeholder="Type your message here..." />
+    <input type="text" id="user-input" placeholder="Type your message here...">
     <button id="send-btn">Send</button>
   </div>
-
   <script>
-    // Replace with your actual OpenRouter API key.
+    // Set the endpoint for DeepSeek (free model) as per official docs.
+    const apiUrl = "https://openrouter.ai/deepseek/deepseek-r1:free/api";
+    // Replace with your exact API key (ensure no extra spaces or missing characters).
     const apiKey = "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";
-    // Official endpoint as per your TypeScript example.
-    const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-    // Optional headers – update these with your actual site URL and title if desired.
-    const httpReferer = "<YOUR_SITE_URL>";
-    const xTitle = "<YOUR_SITE_NAME>";
-
+    
     const chatOutput = document.getElementById("chat-output");
     const userInput = document.getElementById("user-input");
     const sendBtn = document.getElementById("send-btn");
 
-    // Append a message to the chat output area.
     function appendMessage(message, sender) {
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "message " + sender;
-      msgDiv.textContent = message;
-      chatOutput.appendChild(msgDiv);
+      const div = document.createElement("div");
+      div.className = "message " + sender;
+      div.textContent = message;
+      chatOutput.appendChild(div);
       chatOutput.scrollTop = chatOutput.scrollHeight;
     }
 
-    // Send the user message to the OpenRouter API and display the response.
     async function sendMessage() {
       const message = userInput.value.trim();
       if (!message) return;
@@ -105,9 +99,7 @@
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "HTTP-Referer": httpReferer, // Optional: Set your site URL here.
-            "X-Title": xTitle,          // Optional: Set your site title here.
+            "Authorization": "Bearer " + apiKey,
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload)
@@ -122,7 +114,8 @@
 
         const data = await response.json();
         console.log("Response data:", data);
-        if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+        if (data && data.choices && data.choices.length > 0 &&
+            data.choices[0].message && data.choices[0].message.content) {
           const botMessage = data.choices[0].message.content;
           appendMessage("Bot: " + botMessage, "bot");
         } else {
@@ -130,17 +123,14 @@
           console.error("Unexpected response format:", data);
         }
       } catch (error) {
+        appendMessage("Bot: Exception - " + error.message, "bot");
         console.error("Exception:", error);
-        appendMessage("Bot: Exception occurred - " + error.message, "bot");
       }
     }
 
-    // Event listeners for sending messages.
     sendBtn.addEventListener("click", sendMessage);
     userInput.addEventListener("keyup", function(event) {
-      if (event.key === "Enter") {
-        sendMessage();
-      }
+      if (event.key === "Enter") sendMessage();
     });
   </script>
 </body>
