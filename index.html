@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeepSeek AI ChatBot Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      padding: 20px;
+    }
+    #chat-container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #chat-output {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .message {
+      margin-bottom: 10px;
+    }
+    .user {
+      text-align: right;
+      color: #333;
+    }
+    .bot {
+      text-align: left;
+      color: #007BFF;
+    }
+    input[type="text"] {
+      width: calc(100% - 100px);
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    button {
+      width: 80px;
+      padding: 10px;
+      border: none;
+      background-color: #007BFF;
+      color: white;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <h2>DeepSeek AI ChatBot</h2>
+    <div id="chat-output"></div>
+    <input type="text" id="user-input" placeholder="Type your message here..." />
+    <button id="send-btn">Send</button>
+  </div>
+
+  <script>
+    // Replace with your actual OpenRouter API key.
+    const apiKey = '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';
+    const apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+
+    const chatOutput = document.getElementById('chat-output');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Append a message to the chat output area.
+    function appendMessage(message, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message ' + sender;
+      msgDiv.textContent = message;
+      chatOutput.appendChild(msgDiv);
+      chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
+
+    // Send the user message to the OpenRouter API and display the response.
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+      
+      appendMessage("You: " + message, 'user');
+      userInput.value = '';
+
+      const payload = {
+        model: 'deepseek/deepseek-r1:free',
+        messages: [
+          { role: 'user', content: message }
+        ]
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+            // Optional: Add 'HTTP-Referer' and 'X-Title' headers if required.
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        if (data && data.choices && data.choices.length > 0) {
+          const botMessage = data.choices[0].message.content;
+          appendMessage("Bot: " + botMessage, 'bot');
+        } else {
+          appendMessage("Bot: Unable to retrieve a response.", 'bot');
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        appendMessage("Bot: Error occurred while fetching response.", 'bot');
+      }
+    }
+
+    // Event listeners for sending a message.
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keyup', function(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
