@@ -67,7 +67,8 @@
   <script>
     // Replace with your actual OpenRouter API key.
     const apiKey = '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';
-    const apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    // Updated endpoint from the official DeepSeek API documentation.
+    const apiUrl = 'https://openrouter.ai/deepseek/deepseek-r1:free/api';
 
     const chatOutput = document.getElementById('chat-output');
     const userInput = document.getElementById('user-input');
@@ -103,25 +104,36 @@
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
-            // Optional: Add 'HTTP-Referer' and 'X-Title' headers if required.
+            // Optional headers such as HTTP-Referer and X-Title can be added here if needed.
           },
           body: JSON.stringify(payload)
         });
-        
+
+        // Check if the HTTP response was successful.
+        if (!response.ok) {
+          const errorText = await response.text();
+          appendMessage("Bot: Error - " + errorText, 'bot');
+          console.error("Error response:", errorText);
+          return;
+        }
+
         const data = await response.json();
-        if (data && data.choices && data.choices.length > 0) {
+        console.log("Response data:", data);
+        // Check for the expected structure in the response.
+        if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
           const botMessage = data.choices[0].message.content;
           appendMessage("Bot: " + botMessage, 'bot');
         } else {
-          appendMessage("Bot: Unable to retrieve a response.", 'bot');
+          appendMessage("Bot: Unexpected response format.", 'bot');
+          console.error("Unexpected response format:", data);
         }
       } catch (error) {
-        console.error("Error:", error);
-        appendMessage("Bot: Error occurred while fetching response.", 'bot');
+        console.error("Exception:", error);
+        appendMessage("Bot: Exception occurred - " + error.message, 'bot');
       }
     }
 
-    // Event listeners for sending a message.
+    // Event listeners for sending messages.
     sendBtn.addEventListener('click', sendMessage);
     userInput.addEventListener('keyup', function(event) {
       if (event.key === 'Enter') {
