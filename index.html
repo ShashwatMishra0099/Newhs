@@ -66,18 +66,21 @@
 
   <script>
     // Replace with your actual OpenRouter API key.
-    const apiKey = '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';
-    // Updated endpoint from the official DeepSeek API documentation.
-    const apiUrl = 'https://openrouter.ai/deepseek/deepseek-r1:free/api';
+    const apiKey = "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";
+    // Official endpoint as per your TypeScript example.
+    const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
+    // Optional headers – update these with your actual site URL and title if desired.
+    const httpReferer = "<YOUR_SITE_URL>";
+    const xTitle = "<YOUR_SITE_NAME>";
 
-    const chatOutput = document.getElementById('chat-output');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
+    const chatOutput = document.getElementById("chat-output");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
 
     // Append a message to the chat output area.
     function appendMessage(message, sender) {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'message ' + sender;
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message " + sender;
       msgDiv.textContent = message;
       chatOutput.appendChild(msgDiv);
       chatOutput.scrollTop = chatOutput.scrollHeight;
@@ -88,55 +91,54 @@
       const message = userInput.value.trim();
       if (!message) return;
       
-      appendMessage("You: " + message, 'user');
-      userInput.value = '';
+      appendMessage("You: " + message, "user");
+      userInput.value = "";
 
       const payload = {
-        model: 'deepseek/deepseek-r1:free',
+        model: "deepseek/deepseek-r1:free",
         messages: [
-          { role: 'user', content: message }
+          { role: "user", content: message }
         ]
       };
 
       try {
         const response = await fetch(apiUrl, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-            // Optional headers such as HTTP-Referer and X-Title can be added here if needed.
+            "Authorization": `Bearer ${apiKey}`,
+            "HTTP-Referer": httpReferer, // Optional: Set your site URL here.
+            "X-Title": xTitle,          // Optional: Set your site title here.
+            "Content-Type": "application/json"
           },
           body: JSON.stringify(payload)
         });
 
-        // Check if the HTTP response was successful.
         if (!response.ok) {
           const errorText = await response.text();
-          appendMessage("Bot: Error - " + errorText, 'bot');
+          appendMessage("Bot: Error - " + errorText, "bot");
           console.error("Error response:", errorText);
           return;
         }
 
         const data = await response.json();
         console.log("Response data:", data);
-        // Check for the expected structure in the response.
         if (data && data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
           const botMessage = data.choices[0].message.content;
-          appendMessage("Bot: " + botMessage, 'bot');
+          appendMessage("Bot: " + botMessage, "bot");
         } else {
-          appendMessage("Bot: Unexpected response format.", 'bot');
+          appendMessage("Bot: Unexpected response format.", "bot");
           console.error("Unexpected response format:", data);
         }
       } catch (error) {
         console.error("Exception:", error);
-        appendMessage("Bot: Exception occurred - " + error.message, 'bot');
+        appendMessage("Bot: Exception occurred - " + error.message, "bot");
       }
     }
 
     // Event listeners for sending messages.
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keyup', function(event) {
-      if (event.key === 'Enter') {
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keyup", function(event) {
+      if (event.key === "Enter") {
         sendMessage();
       }
     });
